@@ -38,6 +38,23 @@ export class AdminService {
     });
   }
 
+  async getPendingTransactions() {
+    return await this.prisma.transaction.findMany({
+      where: {
+        status: 'PENDING',
+      },
+    });
+  }
+  async suspendTransaction(transactionId) {
+    return await this.prisma.transaction.update({
+      where: {
+        id: transactionId,
+      },
+      data: {
+        status: 'FAILED',
+      },
+    });
+  }
   async generateReport() {
     // Example: Generate a monthly transaction summary
     const transactions = await this.prisma.transaction.findMany();

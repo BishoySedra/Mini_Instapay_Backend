@@ -132,11 +132,11 @@ export class TransactionsService {
     });
     return refunds;
   }
-  async acceptRefund(id) {
+  async acceptRefund(transactionId) {
     {
       return await this.prisma.$transaction(async (prisma) => {
         const transaction = await this.prisma.transaction.update({
-          where: { id },
+          where: { id: transactionId },
           data: {
             status: 'SUCCESS',
           },

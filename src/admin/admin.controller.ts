@@ -24,9 +24,19 @@ export class AdminController {
     );
   }
 
-  @Patch('suspend/:id')
+  @Patch('suspendUser/:id')
   async suspendUser(@Param('id') userId: string) {
     return await this.adminService.suspendUser(userId);
+  }
+  @Get('pending-transactions')
+  async showPendingTransactions() {
+    const transactions = await this.adminService.getPendingTransactions();
+    return { message: 'showing pending transactions', data: transactions };
+  }
+  @Patch('suspendTransaction/:id')
+  async suspendTransaction(@Param('id') transactionId: string) {
+    await this.adminService.suspendTransaction(transactionId);
+    return { message: 'transaction suspended' };
   }
 
   @Get('transactions')
@@ -34,11 +44,16 @@ export class AdminController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
   ) {
-    return await this.adminService.monitorTransactions(page, pageSize);
+    const transactions = await this.adminService.monitorTransactions(
+      page,
+      pageSize,
+    );
+    return { message: 'showing transactions', data: transactions };
   }
 
   @Get('report')
   async generateReport() {
-    return await this.adminService.generateReport();
+    const report = await this.adminService.generateReport();
+    return { message: 'report generated', data: report };
   }
 }
