@@ -14,7 +14,6 @@ export class AuthController {
   // console.log('incoming request to login server');
   @UseGuards(LocalGuard)
   login(@Req() req: Request) {
-    console.log('aloooo');
     const user = req.user as {
       id: string;
       email: string;

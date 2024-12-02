@@ -28,9 +28,9 @@ export class AuthService {
   ) {}
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    const { email, password, name, phone } = data;
+    const { email, password, name, phone, address } = data;
     return await this.prisma.user.create({
-      data: { email, password, name, phone },
+      data: { email, password, name, phone, address },
     });
   }
 

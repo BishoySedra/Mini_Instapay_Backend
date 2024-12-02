@@ -19,6 +19,7 @@ model User {
   password          String
   name              String
   phone             String          @unique
+  address           String
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   bankAccounts      BankAccount[]   // One-to-many relationship with BankAccount
@@ -29,14 +30,16 @@ model User {
 }
 
 model BankAccount {
-  id          String      @id @default(uuid())
-  userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountNumber String     @unique
-  bankName    String
-  balance     Float        @default(0.0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id               String      @id @default(uuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountNumber    String      @unique
+  bankName         String
+  balance          Float       @default(0.0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  senderTransactions Transaction[] @relation("SenderAccount")
+  receiverTransactions Transaction[] @relation("ReceiverAccount")
 }
 
 model Transaction {
@@ -45,6 +48,10 @@ model Transaction {
   sender      User         @relation("SentTransactions", fields: [senderId], references: [id])
   receiverId  String
   receiver    User         @relation("ReceivedTransactions", fields: [receiverId], references: [id])
+  senderBankAccountId String
+  senderBankAccount   BankAccount @relation("SenderAccount", fields: [senderBankAccountId], references: [id], onDelete: Cascade)
+  receiverBankAccountId String
+  receiverBankAccount BankAccount @relation("ReceiverAccount", fields: [receiverBankAccountId], references: [id], onDelete: Cascade)
   amount      Float
   status      TransactionStatus @default(PENDING)
   createdAt   DateTime     @default(now())

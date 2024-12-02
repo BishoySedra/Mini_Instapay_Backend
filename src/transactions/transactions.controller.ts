@@ -1,4 +1,12 @@
-import { Controller, Req, Get, Post, UseGuards, Body } from '@nestjs/common';
+import {
+  Controller,
+  Req,
+  Get,
+  Post,
+  UseGuards,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
@@ -33,5 +41,15 @@ export class TransactionsController {
       body.transactionType,
     );
     return { message: 'transaction successful', data: transaction };
+  }
+  @Get('show-refunds')
+  async showRefundRequests(@Req() req: Request) {
+    const refunds = await this.transactionsService.showRefundRequests(req.user);
+    return { message: 'showing refund requests', data: refunds };
+  }
+  @Post('accept-refund/:id')
+  async acceptRefund(@Param('id') id: string) {
+    const refund = await this.transactionsService.acceptRefund(id);
+    return { message: 'refund accepted', data: refund };
   }
 }

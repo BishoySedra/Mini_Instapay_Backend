@@ -102,4 +102,42 @@ export class TransactionsService {
     }
     return transaction;
   }
+  async showRefundRequests(user) {
+    const refunds = await this.prisma.transaction.findMany({
+      where: {
+        type: 'REFUND',
+        status: 'PENDING',
+        receiverId: user.id,
+      },
+    });
+    return refunds;
+  }
+  async acceptRefund(id) {
+    {
+      return await this.prisma.$transaction(async (prisma) => {
+        const transaction = await this.prisma.transaction.update({
+          where: { id },
+          data: {
+            status: 'SUCCESS',
+          },
+        });
+        await prisma.bankAccount.update({
+          where: { accountNumber: transaction.receiverId },
+          data: {
+            balance: { decrement: amount },
+          },
+        });
+
+        // Add amount to receiver
+        await prisma.bankAccount.update({
+          where: { accountNumber: receiverAccountNumber },
+          data: {
+            balance: { increment: amount },
+          },
+        });
+      });
+    }
+
+    return refund;
+  }
 }
