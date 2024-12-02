@@ -42,11 +42,33 @@ export class TransactionsController {
     );
     return { message: 'transaction successful', data: transaction };
   }
+  @Post('send-money')
+  async sendMoney(
+    @Req() req: Request,
+    @Body()
+    body: {
+      senderAccountNumber: string;
+      receiverAccountNumber: string;
+      amount: number;
+      transactionType: TransactionType;
+    },
+  ) {
+    const transaction = await this.transactionsService.makeTransaction(
+      req.user,
+      body.senderAccountNumber,
+      body.receiverAccountNumber,
+      body.amount,
+      body.transactionType,
+    );
+    return { message: 'transaction successful', data: transaction };
+  }
+
   @Get('show-refunds')
   async showRefundRequests(@Req() req: Request) {
     const refunds = await this.transactionsService.showRefundRequests(req.user);
     return { message: 'showing refund requests', data: refunds };
   }
+
   @Post('accept-refund/:id')
   async acceptRefund(@Param('id') id: string) {
     const refund = await this.transactionsService.acceptRefund(id);

@@ -14,19 +14,23 @@ datasource db {
 }
 
 model User {
-  id                String          @id @default(uuid())
-  email             String          @unique
-  password          String
-  name              String
-  phone             String          @unique
-  address           String
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  bankAccounts      BankAccount[]   // One-to-many relationship with BankAccount
-  transactionsSent  Transaction[]   @relation("SentTransactions")
-  transactionsReceived Transaction[] @relation("ReceivedTransactions")
-  notifications     Notification[]  // One-to-many relationship with Notification
-  isAdmin           Boolean         @default(false)
+  id                    String          @id @default(uuid())
+  email                 String          @unique
+  password              String
+  name                  String
+  phone                 String          @unique
+  address               String
+  dailyLimit            Float           @default(100000.0)
+  dailyTransactionTotal Float           @default(0.0)
+  lastTransactionDate   DateTime?   // To track the last transaction date
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  bankAccounts          BankAccount[]   // One-to-many relationship with BankAccount
+  transactionsSent      Transaction[]   @relation("SentTransactions")
+  transactionsReceived  Transaction[]   @relation("ReceivedTransactions")
+  notifications         Notification[]  // One-to-many relationship with Notification
+  isAdmin               Boolean         @default(false)
+  isActive               Boolean         @default(true)
 }
 
 model BankAccount {
