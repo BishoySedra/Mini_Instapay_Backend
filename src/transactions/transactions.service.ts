@@ -1,10 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { TransactionStatus, TransactionType } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
+import { NotificationService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationService,
+  ) {}
 
   async showUserTransactions(user) {
     return await this.prisma.transaction.findMany({
@@ -19,85 +23,101 @@ export class TransactionsService {
 
   async makeTransaction(
     user,
-    senderAccountNumber,
-    receiverAccountNumber,
-    amount,
+    senderAccountNumber: string,
+    receiverAccountNumber: string,
+    amount: number,
     transferType: TransactionType,
   ) {
-    if (amount <= 0)
+    if (amount <= 0) {
       throw new BadRequestException(
         'Transfer amount must be greater than zero',
       );
+    }
 
     const senderAccount = await this.prisma.bankAccount.findFirst({
-      where: {
-        accountNumber: senderAccountNumber,
-      },
+      where: { accountNumber: senderAccountNumber },
     });
-    if (!senderAccount)
-      throw new BadRequestException('sender account not found');
-    if (senderAccount.balance < amount)
+
+    if (!senderAccount) {
+      throw new BadRequestException('Sender account not found');
+    }
+
+    if (senderAccount.balance < amount) {
       throw new BadRequestException('Insufficient funds in the sender account');
+    }
 
     const sender = await this.prisma.user.findFirst({
       where: { id: user.id },
     });
 
-    if (sender.dailyLimit - sender.dailyTransactionTotal <= amount)
+    if (sender.dailyLimit - sender.dailyTransactionTotal < amount) {
       throw new BadRequestException('Daily limit exceeded');
+    }
 
     const receiverAccount = await this.prisma.bankAccount.findFirst({
-      where: {
-        accountNumber: receiverAccountNumber,
-      },
+      where: { accountNumber: receiverAccountNumber },
     });
 
-    if (!receiverAccount)
-      throw new BadRequestException('wrong receiver account number');
+    if (!receiverAccount) {
+      throw new BadRequestException('Receiver account not found');
+    }
+    const receiver = await this.prisma.user.findUnique({
+      where: { id: receiverAccount.userId },
+    });
 
-    let transaction, type: TransactionType, status: TransactionStatus;
-
-    return await this.prisma.$transaction(async (prisma) => {
-      // subtract amount from sender
+    return this.prisma.$transaction(async (prisma) => {
+      // Update sender account balance and daily transaction total
       await prisma.bankAccount.update({
         where: { accountNumber: senderAccountNumber },
-        data: {
-          balance: { decrement: amount },
-        },
+        data: { balance: { decrement: amount } },
       });
-      // update daily transaction limit
+
       await prisma.user.update({
-        where: { id: user.id },
+        where: { id: sender.id },
         data: { dailyTransactionTotal: { increment: amount } },
       });
-      // Add amount to receiver
+
+      // Update receiver account balance
       await prisma.bankAccount.update({
         where: { accountNumber: receiverAccountNumber },
-        data: {
-          balance: { increment: amount },
-        },
+        data: { balance: { increment: amount } },
       });
 
-      if (transferType === TransactionType.INSTANT) {
-        type = 'INSTANT';
-        status = 'SUCCESS';
-      }
-      if (transferType === TransactionType.SCHEDULED) {
-        type = 'SCHEDULED';
-        status = 'PENDING';
-      }
-
-      transaction = await prisma.transaction.create({
+      const transaction = await prisma.transaction.create({
         data: {
           sender: { connect: { id: senderAccount.userId } },
           receiver: { connect: { id: receiverAccount.userId } },
           amount,
-          type,
-          status,
+          type: transferType,
+          status:
+            transferType === TransactionType.INSTANT ? 'SUCCESS' : 'PENDING',
           senderBankAccount: { connect: { id: senderAccount.id } },
           receiverBankAccount: { connect: { id: receiverAccount.id } },
         },
       });
+
+      // Notify sender
+      this.notificationsService.notify('transaction', {
+        type: 'sent',
+        sender: { id: sender.id, name: sender.name },
+        receiver: {
+          id: receiver.id,
+          name: receiver.name,
+        },
+        amount,
+      });
+
+      // Notify receiver
+      this.notificationsService.notify('transaction', {
+        type: 'received',
+        sender: { id: sender.id, name: sender.name },
+        receiver: {
+          id: receiver.id,
+          name: receiver.name,
+        },
+        amount,
+      });
+
       return transaction;
     });
   }
