@@ -12,11 +12,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   validate(payload: any) {
-    // console.log(process.env.SECRET_KEY);
     return {
       id: payload.id,
       email: payload.email,
-      name: payload.email,
+      name: payload.name,
       isAdmin: payload.isAdmin,
     };
   }

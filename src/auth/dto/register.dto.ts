@@ -1,7 +1,7 @@
 export class RegisterPayloadDTO {
-  name: string;
-  phone: string;
-  email: string;
-  password: string;
-  address: string;
+  readonly name: string;
+  readonly phone: string;
+  readonly email: string;
+  readonly password: string;
+  readonly address: string;
 }

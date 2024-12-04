@@ -5,13 +5,13 @@ import { LocalGuard } from './guards/local.guard';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { Request } from 'express';
 import { RegisterPayloadDTO } from './dto/register.dto';
+import { AdminGuard } from './guards/admin.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  // console.log('incoming request to login server');
   @UseGuards(LocalGuard)
   login(@Req() req: Request) {
     const user = req.user as {
@@ -34,7 +34,7 @@ export class AuthController {
   }
 
   @Get('status')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   status(@Req() req: Request) {
     return req.user;
   }

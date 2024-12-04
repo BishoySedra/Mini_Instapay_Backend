@@ -1,8 +1,8 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { LinkBankAccountDTO } from './dtos/linkBankAccount.dto';
@@ -16,19 +16,18 @@ export class UsersService {
     const account = await this.prisma.bankAccount.create({
       data: { accountNumber, bankName, balance, userId: user.id },
     });
-    console.log(account);
     if (!account) throw new HttpException('error in account creation', 404);
 
     return account;
   }
-  async unlinkBankAccount(bankAccountId: string, user) {
-    if (bankAccountId != user.id)
-      throw new UnauthorizedException(
-        'not allowed to unlink other users accounts',
-      );
-    await this.prisma.bankAccount.delete({
-      where: { id: bankAccountId },
-    });
+  async unlinkBankAccount(bankAccountNumber: string, user) {
+    try {
+      await this.prisma.bankAccount.delete({
+        where: { accountNumber: bankAccountNumber, userId: user.id },
+      });
+    } catch (err) {
+      throw new BadRequestException('failed to unlink this bank account');
+    }
     return;
   }
   async showBankAccounts(user) {
@@ -44,15 +43,18 @@ export class UsersService {
 
   async updateProfile(updateData, user) {
     const email = user.email;
-    const updateUser = await this.prisma.user.update({
+
+    const updateFields = Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      Object.entries(updateData).filter(([_, value]) => value !== undefined),
+    ) as Partial<{ phone: string; email: string; address: string }>;
+
+    const updatedUser = await this.prisma.user.update({
       where: {
         email,
       },
-      data: {
-        phone: updateData.phone,
-        email: updateData.email,
-      },
+      data: updateFields,
     });
-    return updateUser;
+    return updatedUser;
   }
 }

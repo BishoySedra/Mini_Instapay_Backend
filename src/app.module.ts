@@ -9,7 +9,14 @@ import { AdminModule } from './admin/admin.module';
 import { ReportsModule } from './reports/reports.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, TransactionsModule, NotificationsModule, AdminModule, ReportsModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    TransactionsModule,
+    NotificationsModule,
+    AdminModule,
+    ReportsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

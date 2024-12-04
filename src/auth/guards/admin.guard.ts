@@ -9,6 +9,7 @@ import {
 export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
+    // console.log(request);
     const user = request.user;
 
     // Check if the user is logged in and isAdmin is true

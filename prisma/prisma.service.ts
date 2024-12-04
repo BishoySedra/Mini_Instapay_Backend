@@ -11,8 +11,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         (params.action === 'create' || params.action === 'update')
       ) {
         const data = params.args.data;
-        console.log(parseInt(process.env.SALT_ROUNDS, 10));
-        console.log(process.env.SECRET_KEY);
         if (data.password) {
           data.password = await bcrypt.hash(
             data.password,

@@ -1,7 +1,16 @@
-import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { NotificationService } from './notifications.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
 @Controller('notifications')
+@UseGuards(JwtAuthGuard)
 export class NotificationsController {
   constructor(private readonly notificationService: NotificationService) {}
 
