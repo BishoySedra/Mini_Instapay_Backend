@@ -6,6 +6,7 @@ import { JwtAuthGuard } from './guards/jwt.guard';
 import { Request } from 'express';
 import { RegisterPayloadDTO } from './dto/register.dto';
 import { AdminGuard } from './guards/admin.guard';
+import { ApiCreatedResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +26,9 @@ export class AuthController {
   }
 
   @Post('signup')
+  @ApiCreatedResponse({
+    description: 'login successful',
+  })
   async signup(@Body() registerPayloadDto: RegisterPayloadDTO) {
     const user = await this.authService.createUser(registerPayloadDto);
     return {
