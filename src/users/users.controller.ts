@@ -1,3 +1,4 @@
+// users.controller.ts
 import {
   Body,
   Controller,
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { Request } from 'express';
 import { LinkBankAccountDTO } from './dtos/linkBankAccount.dto';
 import { UpdateUserProfileDto } from './dtos/updateUserProfile.dto';
+
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
@@ -39,14 +41,22 @@ export class UsersController {
     await this.usersService.unlinkBankAccount(bankAccountNumber, req.user);
     return { message: 'Bank account unlinked successfully' };
   }
+
   @Get('showBankAccounts')
   async showBankAccounts(@Req() req: Request) {
     const accounts = await this.usersService.showBankAccounts(req.user);
-    return { message: 'showing user accounts', accounts };
+    return { message: 'Showing user bank accounts', accounts };
   }
+
   @Patch('updateProfile')
-  updateProfile(@Req() req: Request, @Body() updateData: UpdateUserProfileDto) {
-    const user = req.user;
-    this.usersService.updateProfile(updateData, user);
+  async updateProfile(
+    @Req() req: Request,
+    @Body() updateData: UpdateUserProfileDto,
+  ) {
+    const updatedUser = await this.usersService.updateProfile(
+      updateData,
+      req.user,
+    );
+    return { message: 'Profile updated successfully', updatedUser };
   }
 }

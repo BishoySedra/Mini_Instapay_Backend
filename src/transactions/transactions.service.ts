@@ -2,45 +2,20 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { TransactionType } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { NotificationService } from 'src/notifications/notifications.service';
+import { TransactionsRepository } from './transactions.repository';
+import { TransactionFactory } from './transactions.factory';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationService,
+    private transactionsRepository: TransactionsRepository,
+    private transactionFactory: TransactionFactory,
   ) {}
 
   async showUserTransactions(user) {
-    return await this.prisma.transaction.findMany({
-      where: {
-        OR: [{ senderId: user.id }, { receiverId: user.id }],
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        senderBankAccount: {
-          select: {
-            accountNumber: true, // This will show the sender's account number
-          },
-        },
-        receiverBankAccount: {
-          select: {
-            accountNumber: true, // This will show the receiver's account number
-          },
-        },
-        sender: {
-          select: {
-            name: true, // Sender's name (optional, you can add more fields if needed)
-          },
-        },
-        receiver: {
-          select: {
-            name: true, // Receiver's name (optional, you can add more fields if needed)
-          },
-        },
-      },
-    });
+    return await this.transactionsRepository.findUserTransactions(user.id);
   }
 
   async makeTransaction(
@@ -58,9 +33,11 @@ export class TransactionsService {
       );
     }
 
-    const senderAccount = await this.prisma.bankAccount.findFirst({
-      where: { accountNumber: senderAccountNumber },
-    });
+    const senderAccount =
+      await this.transactionsRepository.findBankAccountByAccNumber(
+        senderAccountNumber,
+      );
+
     if (!senderAccount) {
       throw new BadRequestException('Sender account not found');
     }
@@ -68,7 +45,8 @@ export class TransactionsService {
       throw new BadRequestException('Insufficient funds in the sender account');
     }
 
-    const sender = await this.prisma.user.findFirst({ where: { id: user.id } });
+    const sender = await this.transactionsRepository.findUserById(user.id);
+
     const remainingFunds = sender.dailyLimit - sender.dailyTransactionTotal;
     if (remainingFunds < amount) {
       throw new BadRequestException(
@@ -76,63 +54,68 @@ export class TransactionsService {
       );
     }
 
-    const receiverAccount = await this.prisma.bankAccount.findFirst({
-      where: { accountNumber: receiverAccountNumber },
-    });
+    const receiverAccount =
+      await this.transactionsRepository.findBankAccountByAccNumber(
+        receiverAccountNumber,
+      );
+
     if (!receiverAccount) {
       throw new BadRequestException('Receiver account not found');
     }
-    const receiver = await this.prisma.user.findUnique({
-      where: { id: receiverAccount.userId },
-    });
+
+    const receiver = await this.transactionsRepository.findUserById(
+      receiverAccount.userId,
+    );
 
     try {
       const transaction = await this.prisma.$transaction(async (prisma) => {
         console.log('Updating sender and receiver accounts...');
 
-        await prisma.bankAccount.update({
-          where: { accountNumber: senderAccountNumber },
-          data: { balance: { decrement: amount } },
-        });
+        await this.transactionsRepository.decrementAccountBalance(
+          prisma,
+          senderAccountNumber,
+          amount,
+        );
+        await this.transactionsRepository.updateUserDailyTransaction(
+          prisma,
+          sender.id,
+          amount,
+        );
+        await this.transactionsRepository.incrementAccountBalance(
+          prisma,
+          receiverAccountNumber,
+          amount,
+        );
 
-        await prisma.user.update({
-          where: { id: sender.id },
-          data: { dailyTransactionTotal: { increment: amount } },
-        });
-
-        await prisma.bankAccount.update({
-          where: { accountNumber: receiverAccountNumber },
-          data: { balance: { increment: amount } },
-        });
-
-        const newTransaction = await prisma.transaction.create({
-          data: {
-            sender: { connect: { id: senderAccount.userId } },
-            receiver: { connect: { id: receiverAccount.userId } },
-            amount,
-            type: transferType,
-            status:
+        const newTransaction =
+          await this.transactionsRepository.createTransaction(
+            this.transactionFactory.createTransaction(
+              senderAccount.userId,
+              receiverAccount.userId,
+              senderAccount.id,
+              receiverAccount.id,
+              amount,
+              transferType,
               transferType === TransactionType.INSTANT ? 'SUCCESS' : 'PENDING',
-            senderBankAccount: { connect: { id: senderAccount.id } },
-            receiverBankAccount: { connect: { id: receiverAccount.id } },
-          },
-        });
+            ),
+            prisma,
+          );
 
-        console.log('Transaction created:', newTransaction);
-
-        await this.notificationsService.notify('transaction', {
-          type: 'sent',
-          sender: { id: sender.id, name: sender.name },
-          receiver: { id: receiver.id, name: receiver.name },
+        // console.log('Transaction created:', newTransaction);
+        await this.transactionsRepository.makeTransactionNotification(
+          this.notificationsService,
+          sender,
+          receiver,
           amount,
-        });
-
-        await this.notificationsService.notify('transaction', {
-          type: 'received',
-          sender: { id: sender.id, name: sender.name },
-          receiver: { id: receiver.id, name: receiver.name },
+          'sent',
+        );
+        await this.transactionsRepository.makeTransactionNotification(
+          this.notificationsService,
+          sender,
+          receiver,
           amount,
-        });
+          'received',
+        );
 
         return newTransaction;
       });
@@ -151,7 +134,7 @@ export class TransactionsService {
     receiverAccountNumber,
     amount,
   ) {
-    const transaction = await this.prisma.transaction.create({
+    const transaction = this.transactionsRepository.createTransaction({
       data: {
         sender: { connect: { id: user.id } },
         receiver: { connect: { id: user.id } },
@@ -192,13 +175,9 @@ export class TransactionsService {
   }
 
   async showRefundRequests(user) {
-    const refunds = await this.prisma.transaction.findMany({
-      where: {
-        type: 'REFUND',
-        status: 'PENDING',
-        receiverId: user.id,
-      },
-    });
+    const refunds = await this.transactionsRepository.findRefundRequests(
+      user.id,
+    );
     return refunds;
   }
   async acceptRefund(transactionId) {

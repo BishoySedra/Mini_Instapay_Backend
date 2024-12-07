@@ -1,46 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service';
+import { ReportsRepository } from './reports.repository';
+import { ReportFactory } from './reports.factory';
 
 @Injectable()
 export class ReportsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private reportsRepository: ReportsRepository,
+    private reportFactory: ReportFactory, // Inject Factory
+  ) {}
 
   async getTransactionSummary(startDate: string, endDate: string) {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    const transactions = await this.prisma.transaction.findMany({
-      where: {
-        createdAt: {
-          gte: start,
-          lte: end,
-        },
-      },
-    });
+    const transactions =
+      await this.reportsRepository.findTransactionsWithinDateRange(start, end);
 
     const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-    return {
-      totalTransactions: transactions.length,
-      totalAmount,
+    return this.reportFactory.createTransactionSummaryReport(
       transactions,
-    };
+      totalAmount,
+    );
   }
 
-  async getAccountUsage(userId: string) {
-    const linkedAccounts = await this.prisma.bankAccount.count({
-      where: { userId },
-    });
+  async getAccountUsage(user) {
+    const id = user.id;
+    const linkedAccounts =
+      await this.reportsRepository.countUserLinkedAccounts(id);
+    const transactionsCount =
+      await this.reportsRepository.countUserTransactions(id);
 
-    const transactionsCount = await this.prisma.transaction.count({
-      where: {
-        OR: [{ senderId: userId }, { receiverId: userId }],
-      },
-    });
-
-    return {
+    return this.reportFactory.createAccountUsageReport(
       linkedAccounts,
       transactionsCount,
-    };
+    );
   }
 }

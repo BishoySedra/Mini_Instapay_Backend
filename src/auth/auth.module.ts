@@ -7,6 +7,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaService } from 'prisma/prisma.service';
 import { LocalGuard } from './guards/local.guard';
+import { AuthRepository } from './auth.repository';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'local' }),
@@ -18,6 +19,7 @@ import { LocalGuard } from './guards/local.guard';
   controllers: [AuthController],
   providers: [
     AuthService,
+    AuthRepository,
     LocalStrategy,
     JwtStrategy,
     PrismaService,

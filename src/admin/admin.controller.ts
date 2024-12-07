@@ -8,9 +8,10 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/auth/guards/admin.guard';
 import { AdminService } from './admin.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
 @Controller('admin')
-@UseGuards(AdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
   constructor(private adminService: AdminService) {}
   @Get('users')
@@ -45,8 +46,8 @@ export class AdminController {
     @Query('pageSize') pageSize: number,
   ) {
     const transactions = await this.adminService.monitorTransactions(
-      page,
-      pageSize,
+      Number(page) || 1,
+      Number(pageSize) || 10,
     );
     return { message: 'showing transactions', data: transactions };
   }

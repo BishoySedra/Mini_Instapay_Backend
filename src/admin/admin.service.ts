@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service';
+import { AdminRepository } from './admin.repository';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private adminRepository: AdminRepository) {}
+
   async getUsers(page: number = 1, pageSize: number = 10) {
     const skip = (page - 1) * pageSize;
-    const users = await this.prisma.user.findMany({
-      skip: skip,
-      take: pageSize,
-    });
-
-    const totalUsers = await this.prisma.user.count(); // Get the total number of users
+    const users = await this.adminRepository.findPaginatedUsers(skip, pageSize);
+    const totalUsers = await this.adminRepository.countUsers();
     const totalPages = Math.ceil(totalUsers / pageSize);
 
     return {
@@ -22,42 +19,29 @@ export class AdminService {
       pageSize,
     };
   }
+
   async suspendUser(userId: string) {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { isActive: false },
-    });
+    return this.adminRepository.updateUserStatus(userId, false);
   }
 
   async monitorTransactions(page: number = 1, pageSize: number = 10) {
     const skip = (page - 1) * pageSize;
-    return this.prisma.transaction.findMany({
-      skip: skip,
-      take: pageSize,
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.adminRepository.findPaginatedTransactions(skip, pageSize);
   }
 
   async getPendingTransactions() {
-    return await this.prisma.transaction.findMany({
-      where: {
-        status: 'PENDING',
-      },
-    });
+    return this.adminRepository.findPendingTransactions();
   }
-  async suspendTransaction(transactionId) {
-    return await this.prisma.transaction.update({
-      where: {
-        id: transactionId,
-      },
-      data: {
-        status: 'FAILED',
-      },
-    });
+
+  async suspendTransaction(transactionId: string) {
+    return this.adminRepository.updateTransactionStatus(
+      transactionId,
+      'FAILED',
+    );
   }
+
   async generateReport() {
-    // Example: Generate a monthly transaction summary
-    const transactions = await this.prisma.transaction.findMany();
+    const transactions = await this.adminRepository.findAllTransactions();
     return {
       totalTransactions: transactions.length,
       totalAmount: transactions.reduce((sum, t) => sum + t.amount, 0),

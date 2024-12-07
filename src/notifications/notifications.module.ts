@@ -1,37 +1,33 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { NotificationService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
-import { InAppNotification } from './app.notification';
 import { PrismaService } from 'prisma/prisma.service';
+import { InAppNotification } from './app.notification';
+import { NotificationService } from './notifications.service';
+import { NotificationsRepository } from './notifications.repository';
+import { NotificationFactory } from './notifications.factory';
 
 @Module({
-  providers: [NotificationService, InAppNotification, PrismaService],
+  providers: [
+    NotificationService,
+    NotificationsRepository,
+    PrismaService,
+    InAppNotification,
+    NotificationFactory,
+  ],
   controllers: [NotificationsController],
   exports: [NotificationService, InAppNotification],
 })
 export class NotificationsModule implements OnModuleInit {
   constructor(
-    private notificationService: NotificationService,
-    private inAppNotification: InAppNotification,
+    private readonly notificationService: NotificationService,
+    private readonly inAppNotification: InAppNotification,
   ) {}
 
   onModuleInit() {
-    // console.log(
-    //   'NotificationService instance in NotificationsModule:',
-    //   this.notificationService,
-    // );
-    // console.log(
-    //   'InAppNotification instance in NotificationsModule:',
-    //   this.inAppNotification,
-    // );
     this.notificationService.subscribe(this.inAppNotification);
-    // console.log(
-    //   'Observers after subscription:',
-    //   this.notificationService['observers'],
-    // );
   }
+
   onModuleDestroy() {
-    // console.log('Destroying NotificationsModule...');
     this.notificationService.unsubscribe(this.inAppNotification);
   }
 }

@@ -1,7 +1,7 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { ReportsService } from './reports.service';
-
+import { Request } from 'express';
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
@@ -15,7 +15,8 @@ export class ReportsController {
     return await this.reportsService.getTransactionSummary(startDate, endDate);
   }
   @Get('account-usage')
-  async accountUsage(@Query('userId') userId: string) {
-    return await this.reportsService.getAccountUsage(userId);
+  async accountUsage(@Req() req: Request) {
+    const user = req.user;
+    return await this.reportsService.getAccountUsage(user);
   }
 }

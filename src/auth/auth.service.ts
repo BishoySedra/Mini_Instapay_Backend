@@ -1,55 +1,44 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, User } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
 import { verifyPassword } from './utils/helpers';
+import { AuthRepository } from './auth.repository';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-  // private static instance: AuthService;
-
-  /*
-  private constructor(
-    private jwtService: JwtService,
-    private prisma: PrismaService,
-  ) {}
-    */
-
-  // static getInstance(): AuthService {
-  //   if (!AuthService.instance) {
-  //     AuthService.instance = new AuthService(private jwtService: JwtService, private prisma: PrismaService);
-  //   }
-  //   return AuthService.instance;
-  // }
   constructor(
     private jwtService: JwtService,
-    private prisma: PrismaService,
+    private authRepository: AuthRepository,
   ) {}
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+  async createUser(data: Prisma.UserCreateInput) {
     const { email, password, name, phone, address } = data;
-    return await this.prisma.user.create({
-      data: { email, password, name, phone, address },
+    return await this.authRepository.createUser({
+      email,
+      password,
+      name,
+      phone,
+      address,
     });
   }
 
   async validateUser({ email, password }: AuthPayloadDto) {
-    const findUser = await this.prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
+    const user = await this.authRepository.findUserByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-    if (!findUser) throw new UnauthorizedException('Invalid credentials');
-    const isPasswordValid = await verifyPassword(password, findUser.password);
-
-    if (!isPasswordValid) throw new UnauthorizedException('invalid credents');
+    const isPasswordValid = await verifyPassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userWithoutPassword } = findUser;
+    const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
+
   generateJwt(user: {
     id: string;
     email: string;

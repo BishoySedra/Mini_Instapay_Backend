@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { Observer } from '../observer';
 import { PrismaService } from 'prisma/prisma.service';
+import { Observer } from './observer';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class NotificationService {

@@ -11,7 +11,7 @@ export class UpdateUserProfileDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @Transform(({ value }) => String(value))
-  @IsNumber()
+  @IsString()
   readonly phone: string;
   @ApiProperty({ required: false })
   @IsOptional()
