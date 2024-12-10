@@ -14,6 +14,10 @@ export class AuthService {
 
   async createUser(data: Prisma.UserCreateInput) {
     const { email, password, name, phone, address } = data;
+    const isFound = await this.authRepository.findUserByEmail(email);
+    if (isFound) {
+      throw new UnauthorizedException('this email is already taken');
+    }
     return await this.authRepository.createUser({
       email,
       password,
