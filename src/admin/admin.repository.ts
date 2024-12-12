@@ -16,14 +16,36 @@ export class AdminRepository {
   async countUsers() {
     return this.prisma.user.count();
   }
-
+  async findAllBankAccounts() {
+    return this.prisma.bankAccount.findMany();
+  }
   async updateUserStatus(userId: string, isActive: boolean) {
     return this.prisma.user.update({
       where: { id: userId },
       data: { isActive },
     });
   }
-
+  async findUserTransactions(userId: string) {
+    return await this.prisma.transaction.findMany({
+      where: {
+        OR: [{ senderId: userId }, { receiverId: userId }],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        senderBankAccount: { select: { accountNumber: true } },
+        receiverBankAccount: { select: { accountNumber: true } },
+        sender: { select: { name: true } },
+        receiver: { select: { name: true } },
+      },
+    });
+  }
+  async findUserBankAccounts(userId: string) {
+    return await this.prisma.bankAccount.findMany({
+      where: {
+        userId,
+      },
+    });
+  }
   async findPaginatedTransactions(skip: number, take: number) {
     return this.prisma.transaction.findMany({
       skip,

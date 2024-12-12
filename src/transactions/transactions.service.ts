@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TransactionType } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { NotificationService } from 'src/notifications/notifications.service';
@@ -41,6 +45,10 @@ export class TransactionsService {
     if (!senderAccount) {
       throw new BadRequestException('Sender account not found');
     }
+    if (senderAccount.accountNumber != user.id)
+      throw new UnauthorizedException(
+        'the sender bank account is not your account',
+      );
     if (senderAccount.balance < amount) {
       throw new BadRequestException('Insufficient funds in the sender account');
     }

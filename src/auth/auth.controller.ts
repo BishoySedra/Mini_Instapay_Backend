@@ -20,6 +20,8 @@ export class AuthController {
       email: string;
       name: string;
       isAdmin: boolean;
+      phone: string;
+      address: string;
     };
     const token = this.authService.generateJwt(user);
     return { message: 'login successful', token, user };

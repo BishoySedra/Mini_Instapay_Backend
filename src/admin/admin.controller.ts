@@ -52,9 +52,20 @@ export class AdminController {
     return { message: 'showing transactions', data: transactions };
   }
 
+  @Get('userDetails/:id')
+  async viewUser(@Param('id') id: string) {
+    const data = await this.adminService.getUserDetails(id);
+    return { message: 'showing user accounts and transactions', data };
+  }
+
   @Get('report')
   async generateReport() {
     const report = await this.adminService.generateReport();
     return { message: 'report generated', data: report };
+  }
+  @Get('allBankAccounts')
+  async getAllAccounts() {
+    const accounts = await this.adminService.getAllBankAccounts();
+    return { message: 'bank accounts returned successfuly', accounts };
   }
 }

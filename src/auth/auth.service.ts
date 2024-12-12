@@ -48,12 +48,16 @@ export class AuthService {
     email: string;
     name: string;
     isAdmin: boolean;
+    phone: string;
+    address: string;
   }) {
     const payload = {
       id: user.id,
       email: user.email,
       name: user.name,
       isAdmin: user.isAdmin,
+      phone: user.phone,
+      address: user.address,
     };
     return this.jwtService.sign(payload);
   }

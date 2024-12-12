@@ -19,7 +19,9 @@ export class AdminService {
       pageSize,
     };
   }
-
+  async getAllBankAccounts() {
+    return this.adminRepository.findAllBankAccounts();
+  }
   async suspendUser(userId: string) {
     return this.adminRepository.updateUserStatus(userId, false);
   }
@@ -39,7 +41,16 @@ export class AdminService {
       'FAILED',
     );
   }
-
+  async getUserDetails(userId: string) {
+    const bankAccounts =
+      await this.adminRepository.findUserBankAccounts(userId);
+    const transactions =
+      await this.adminRepository.findUserTransactions(userId);
+    return {
+      bankAccounts,
+      transactions,
+    };
+  }
   async generateReport() {
     const transactions = await this.adminRepository.findAllTransactions();
     return {
