@@ -51,6 +51,12 @@ export class AdminRepository {
       skip,
       take,
       orderBy: { createdAt: 'desc' },
+      include: {
+        senderBankAccount: { select: { accountNumber: true } },
+        receiverBankAccount: { select: { accountNumber: true } },
+        sender: { select: { name: true } },
+        receiver: { select: { name: true } },
+      },
     });
   }
 
