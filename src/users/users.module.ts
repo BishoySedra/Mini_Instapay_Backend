@@ -6,6 +6,7 @@ import { JwtStrategy } from 'src/auth/strategies/jwt.strategy';
 import { PrismaService } from 'prisma/prisma.service';
 import { UsersRepository } from './users.repository';
 import { UserFactory } from './users.factory';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   providers: [
@@ -14,6 +15,7 @@ import { UserFactory } from './users.factory';
     PrismaService,
     UsersRepository,
     UserFactory,
+    JwtService,
   ],
   controllers: [UsersController],
 })

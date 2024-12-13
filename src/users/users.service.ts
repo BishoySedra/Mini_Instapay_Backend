@@ -4,12 +4,14 @@ import { UsersRepository } from './users.repository';
 import { LinkBankAccountDTO } from './dtos/linkBankAccount.dto';
 import { UpdateUserProfileDto } from './dtos/updateUserProfile.dto';
 import { UserFactory } from './users.factory';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersRepository: UsersRepository,
     private usersFactory: UserFactory,
+    private jwtService: JwtService,
   ) {}
 
   // Link a bank account to the user
@@ -71,10 +73,24 @@ export class UsersService {
       throw new BadRequestException('No valid fields to update.');
     }
 
-    const updatedUser = await this.usersRepository.updateProfile(
+    const updatedQueriedUser = await this.usersRepository.updateProfile(
       user.email,
       updateFields,
     );
-    return this.usersFactory.createUserProfileResponse(updatedUser);
+    const payload: {
+      id: string;
+      email: string;
+      name: string;
+      isAdmin: boolean;
+      phone: string;
+      address: string;
+    } = {
+      ...user,
+      ...updateFields,
+    };
+    const token = await this.jwtService.sign(payload);
+    const updatedUser =
+      this.usersFactory.createUserProfileResponse(updatedQueriedUser);
+    return { updatedUser, token };
   }
 }
