@@ -59,4 +59,9 @@ export class UsersController {
     );
     return { message: 'Profile updated successfully', updatedUser };
   }
+  @Get('status')
+  async getProfile(@Req() req: Request) {
+    const user = await this.usersService.getProfile(req.user);
+    return { message: 'user profile returned succesfully', user };
+  }
 }

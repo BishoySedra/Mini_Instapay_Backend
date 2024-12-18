@@ -1,11 +1,9 @@
-import { Controller, Post, UseGuards, Req, Get, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Req, Body } from '@nestjs/common';
 // import { AuthPayloadDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { LocalGuard } from './guards/local.guard';
-import { JwtAuthGuard } from './guards/jwt.guard';
 import { Request } from 'express';
 import { RegisterPayloadDTO } from './dto/register.dto';
-import { AdminGuard } from './guards/admin.guard';
 import { ApiCreatedResponse } from '@nestjs/swagger';
 
 @Controller('auth')
@@ -37,11 +35,5 @@ export class AuthController {
       message: 'Signup successful',
       user: { id: user.id, email: user.email, name: user.name },
     };
-  }
-
-  @Get('status')
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  status(@Req() req: Request) {
-    return req.user;
   }
 }

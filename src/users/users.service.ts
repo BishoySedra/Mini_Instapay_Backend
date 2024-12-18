@@ -72,25 +72,13 @@ export class UsersService {
     if (Object.keys(updateFields).length === 0) {
       throw new BadRequestException('No valid fields to update.');
     }
-
-    const updatedQueriedUser = await this.usersRepository.updateProfile(
+    const updatedUser = await this.usersRepository.updateProfile(
       user.email,
       updateFields,
     );
-    const payload: {
-      id: string;
-      email: string;
-      name: string;
-      isAdmin: boolean;
-      phone: string;
-      address: string;
-    } = {
-      ...user,
-      ...updateFields,
-    };
-    const token = await this.jwtService.sign(payload);
-    const updatedUser =
-      this.usersFactory.createUserProfileResponse(updatedQueriedUser);
-    return { updatedUser, token };
+    return this.usersFactory.createUserProfileResponse(updatedUser);
+  }
+  async getProfile(user) {
+    return this.usersRepository.findById(user.id);
   }
 }
