@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { PassportModule } from '@nestjs/passport';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -23,5 +22,8 @@ async function bootstrap() {
   );
 
   await app.listen(3000);
+
+  console.log('Server is running on port 3000');
+  console.log('Swagger is available at http://localhost:3000/api');
 }
 bootstrap();

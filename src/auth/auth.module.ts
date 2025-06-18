@@ -26,4 +26,4 @@ import { AuthRepository } from './auth.repository';
     LocalGuard,
   ],
 })
-export class AuthModule {}
+export class AuthModule { }
