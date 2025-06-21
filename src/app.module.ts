@@ -6,6 +6,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
 import { ReportsModule } from './reports/reports.module';
 
+
 @Module({
   imports: [
     AuthModule,
@@ -16,4 +17,5 @@ import { ReportsModule } from './reports/reports.module';
     ReportsModule,
   ]
 })
+
 export class AppModule { }
