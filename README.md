@@ -51,9 +51,12 @@ A modern, secure payment processing API built with NestJS, Prisma, and PostgreSQ
    SECRET_KEY="your-jwt-secret-key"
    SALT_ROUNDS="10"
    PORT="3000"
+<<<<<<< HEAD
    NODE_ENV="development|production"
    PROTOCOL="https|http"
    APP_URL="your-production-server-url"
+=======
+>>>>>>> 9dd2ed7a848cecc7b69fee30facc68c330e4f7dd
    ```
 
 4. **Set up database**
