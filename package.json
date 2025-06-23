@@ -13,7 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "prisma:dev:deploy": "npx prisma migrate deploy",
     "build": "nest build && npm run prisma:dev:deploy",
-    "prestart:prod": "prisma:dev:deploy",
+    "prestart:prod": "npm run prisma:dev:deploy",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
