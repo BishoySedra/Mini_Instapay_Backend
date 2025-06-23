@@ -1,73 +1,163 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# InstaPay API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A modern, secure payment processing API built with NestJS, Prisma, and PostgreSQL. InstaPay provides instant money transfers, transaction management, and comprehensive admin controls for financial applications.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **User Authentication** - JWT-based authentication with role-based access control
+- **Bank Account Management** - Link/unlink multiple bank accounts per user
+- **Instant Transfers** - Real-time money transfers between accounts
+- **Transaction History** - Complete audit trail of all transactions
+- **Daily Limits** - Configurable spending limits with automatic tracking
+- **Refund System** - Request and process transaction refunds
+- **Admin Dashboard** - User management, transaction monitoring, and reporting
+- **Notifications** - Real-time in-app notifications for transactions
+- **API Documentation** - Interactive Swagger/OpenAPI documentation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
 
-## Installation
+- **Backend**: NestJS (Node.js)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT with Passport.js
+- **Documentation**: Swagger/OpenAPI
+- **Validation**: Class Validator & Class Transformer
+- **Architecture**: Repository Pattern, Factory Pattern, Observer Pattern
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- PostgreSQL database
+- Docker (optional)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd instapay
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   # Create .env file with:
+   DATABASE_URL="postgresql://username:password@localhost:5432/instapay"
+   SECRET_KEY="your-jwt-secret-key"
+   SALT_ROUNDS="10"
+   PORT="3000"
+   ```
+
+4. **Set up database**
+   ```bash
+   # Run migrations
+   npx prisma migrate deploy
+   
+   # Generate Prisma client
+   npx prisma generate
+   ```
+
+5. **Start the application**
+   ```bash
+   # Development mode
+   npm run start:dev
+   
+   # Production mode
+   npm run start:prod
+   ```
+
+### Using Docker
 
 ```bash
-$ npm install
+# Start PostgreSQL with Docker
+docker run --name instapay-db -e POSTGRES_PASSWORD=Backend@2004 -e POSTGRES_DB=mydb -p 5432:5432 -d postgres:latest
+
+# Or use the provided Dockerfile
+docker build -t instapay-db .
+docker run -p 5432:5432 instapay-db
 ```
 
-## Running the app
+## API Documentation
+
+Once the application is running, access the interactive API documentation at:
+- **Development**: http://localhost:3000/docs
+- **Production**: https://your-domain.com/docs
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/signup` - Register new user
+- `POST /auth/login` - User login
+
+### Users
+- `POST /users/linkBankAccount` - Link bank account
+- `GET /users/showBankAccounts` - View linked accounts
+- `PATCH /users/updateProfile` - Update user profile
+
+### Transactions
+- `POST /transactions/make-transaction` - Create transaction
+- `GET /transactions/show-all` - View transaction history
+- `POST /transactions/accept-refund/:id` - Accept refund request
+
+### Admin (Admin access required)
+- `GET /admin/users` - Manage users
+- `GET /admin/transactions` - Monitor transactions
+- `GET /admin/report` - Generate reports
+
+### Notifications
+- `GET /notifications/:userId` - Get user notifications
+- `PATCH /notifications/:id/read` - Mark as read
+
+## Database Schema
+
+The application uses the following main entities:
+- **User** - User accounts with authentication and profile data
+- **BankAccount** - Linked bank accounts with balances
+- **Transaction** - Payment records with status tracking
+- **Notification** - In-app notification system
+
+## Security Features
+
+- Password hashing with bcrypt
+- JWT token authentication
+- Role-based access control (User/Admin)
+- Daily transaction limits
+- Input validation and sanitization
+- SQL injection prevention with Prisma
+
+## Development
 
 ```bash
-# development
-$ npm run start
+# Run tests
+npm run test
 
-# watch mode
-$ npm run start:dev
+# Run e2e tests
+npm run test:e2e
 
-# production mode
-$ npm run start:prod
+# Lint code
+npm run lint
+
+# Format code
+npm run format
 ```
 
-## Test
+## Contributing
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the UNLICENSED License - see the package.json file for details.
+
+## Support
+
+For support and questions, please open an issue in the GitHub repository.
