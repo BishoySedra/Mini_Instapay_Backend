@@ -17,10 +17,10 @@ COPY . .
 RUN npx prisma generate
 
 # Build the application
-RUN npm run build
+RUN npm run prisma:dev:deploy
 
 # Expose port for the application
 EXPOSE 4000
 
 # Start the application
-CMD ["node", "dist/main.js"]
+CMD ["node", "run", "start:prod"]
