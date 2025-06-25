@@ -1,17 +1,26 @@
-FROM node:18-alpine AS builder
+# Use Node image as base image
+FROM node:22.12.0
 
+# Set working directory
 WORKDIR /app
-COPY package*.json ./
+
+# Copy package.json and package-lock.json
+COPY package.json ./
+
+# Install dependencies with flag --legacy-peer-deps to be able to install @nestjs/swagger
 RUN npm install
+
+# Copy all files to the working directory
 COPY . .
+
+# 👇 Generate Prisma client
+RUN npx prisma generate
+
+# Build the application
 RUN npm run build
 
-FROM node:18-alpine
+# Expose port for the application
+EXPOSE 4000
 
-WORKDIR /app
-COPY package.json .
-RUN npm install --only-production
-COPY --from=builder /app/dist ./dist
-
-EXPOSE 3000
-CMD [ "npm", "run", "start:prod" ]
+# Start the application
+CMD ["node", "dist/main.js"]
