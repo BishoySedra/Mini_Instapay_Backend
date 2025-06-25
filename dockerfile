@@ -1,20 +1,42 @@
-# Use Node.js version 22.12.0 as the base image
-FROM node:22-alpine
+# Stage 1: Install dependencies and build the app
+FROM node:20-alpine AS builder
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
-
 # Install dependencies
-RUN npm install --production
+COPY package*.json ./
+RUN npm install
 
-# Copy the rest of the application code to the working directory
+# Copy source files
 COPY . .
 
-# Expose the application port
-EXPOSE 8000
+# Generate Prisma client (if needed)
+RUN npx prisma generate
 
-# Define the command to run the application "npm run start:prod"
-CMD ["npm", "run", "start:prod"]
+# Build the app
+RUN npm run build
+
+# Stage 2: Copy and run the built app
+FROM node:20-alpine AS production
+
+# Set working directory
+WORKDIR /app
+
+# Copy only necessary files
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+
+# Expose application port
+EXPOSE 3000
+
+# Set NODE_ENV to production
+ENV NODE_ENV=production
+
+# Run database migrations (optional: depends on how your production db is managed)
+RUN npx prisma migrate deploy
+
+# Start the app
+CMD ["node", "dist/src/main"]
