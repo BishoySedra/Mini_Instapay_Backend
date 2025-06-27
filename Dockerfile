@@ -11,5 +11,5 @@ RUN npm run build
 
 EXPOSE 8000
 
-# Run Prisma generate with env and start app
-CMD ["sh", "-c", "npx prisma generate && npm run start:prod"]
+# At runtime: generate + deploy + start
+CMD ["sh", "-c", "npx prisma generate && npm run prisma:deploy && npm run start:prod"]
