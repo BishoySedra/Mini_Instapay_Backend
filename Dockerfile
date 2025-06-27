@@ -1,19 +1,15 @@
-FROM node:22-alpine
+FROM node:22.12.0
 
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm install
 
 COPY . .
 
-# ⚠️ Do NOT generate Prisma here
-# RUN npx prisma generate
-
 RUN npm run build
 
-EXPOSE 4000
+EXPOSE 8000
 
-# Prisma generate at runtime to ensure env is available
-CMD ["sh", "-c", "npx prisma generate && node dist/main.js"]
+# Run Prisma generate with env and start app
+CMD ["sh", "-c", "npx prisma generate && npm run start:prod"]
