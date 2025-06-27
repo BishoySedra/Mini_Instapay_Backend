@@ -17,7 +17,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build the application
-RUN npm run prisma:dev:deploy
+RUN npm run build
 
 # Expose port for the application
 EXPOSE 4000
