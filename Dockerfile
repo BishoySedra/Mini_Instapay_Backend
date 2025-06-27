@@ -1,23 +1,19 @@
-# Use Node image as base image
-FROM node:22.12.0
+FROM node:22-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package.json ./
+COPY package*.json ./
 
-# Install dependencies with flag --legacy-peer-deps to be able to install @nestjs/swagger
 RUN npm install
 
-# Copy all files to the working directory
 COPY . .
 
-# Build the application
+# ⚠️ Do NOT generate Prisma here
+# RUN npx prisma generate
+
 RUN npm run build
 
-# Expose port for the application
 EXPOSE 4000
 
-# Start the application
-CMD ["node", "run", "start:prod"]
+# Prisma generate at runtime to ensure env is available
+CMD ["sh", "-c", "npx prisma generate && node dist/main.js"]
