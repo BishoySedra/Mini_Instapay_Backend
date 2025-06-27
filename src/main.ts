@@ -11,7 +11,24 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS for cross-origin requests
-  app.enableCors();
+  const client_url = process.env.CLIENT_URL || 'http://localhost:3000'; // Default to localhost if not set
+  app.enableCors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        `${protocol}://${app_url}`,
+        client_url
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
 
   // Use environment variable for port or default to 3000
   const port = process.env.PORT || 3000;
