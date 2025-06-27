@@ -31,8 +31,8 @@ async function bootstrap() {
       .addServer(`${protocol}://${app_url}`, 'Production Server')
       .build();
 
-    const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, documentFactory);
+    const document = SwaggerModule.createDocument(app, config); // Generate the Swagger document
+    SwaggerModule.setup('docs', app, document); // Pass the document directly
 
     console.log(`Swagger docs are available at: http://localhost:${port}/docs`);
   } else {
@@ -45,8 +45,8 @@ async function bootstrap() {
       .addServer(`http://localhost:${port}`, 'Development Server')
       .build();
 
-    const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, documentFactory);
+    const document = SwaggerModule.createDocument(app, config); // Generate the Swagger document
+    SwaggerModule.setup('docs', app, document); // Pass the document directly
 
     console.log(`Swagger docs are available at: http://localhost:${port}/docs`);
   }
