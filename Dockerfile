@@ -7,9 +7,11 @@ RUN npm install
 
 COPY . .
 
+RUN npx prisma generate
+
 RUN npm run build
 
 EXPOSE 8000
 
 # At runtime: generate + deploy + start
-CMD ["sh", "-c", "npx prisma generate && npm run prisma:deploy && npm run start:prod"]
+CMD ["sh", "-c", "npm run prisma:deploy && npm run start:prod"]
