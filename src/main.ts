@@ -11,12 +11,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS for cross-origin requests
-  const client_url = process.env.CLIENT_URL || 'http://localhost:3000'; // Default to localhost if not set
+  const client_url = process.env.CLIENT_URL; // Default to localhost if not set
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        `${protocol}://${app_url}`,
-        client_url
+        client_url,
+        'http://localhost:3000', // Local development
       ];
 
       if (!origin || allowedOrigins.includes(origin)) {
