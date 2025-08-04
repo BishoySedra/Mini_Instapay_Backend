@@ -4,20 +4,25 @@ import { JwtService } from '@nestjs/jwt';
 import { verifyPassword } from './utils/helpers';
 import { AuthRepository } from './auth.repository';
 import { Prisma } from '@prisma/client';
+import { RegisterPayloadDTO } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private authRepository: AuthRepository,
-  ) {}
+  ) { }
 
-  async createUser(data: Prisma.UserCreateInput) {
+  async createUser(data: RegisterPayloadDTO) {
+
     const { email, password, name, phone, address } = data;
+
     const isFound = await this.authRepository.findUserByEmail(email);
+
     if (isFound) {
       throw new UnauthorizedException('this email is already taken');
     }
+
     return await this.authRepository.createUser({
       email,
       password,
