@@ -9,6 +9,7 @@
     "prisma:deploy": "npx prisma migrate deploy",
     "build": "npx nest build",
     "start:prod": "node dist/src/main.js",
+    "prisma:generate": "npx prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
