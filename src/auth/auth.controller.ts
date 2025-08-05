@@ -71,11 +71,18 @@ export class AuthController {
       },
     },
   })
+
+  // This method handles user registration
   async signup(@Body() registerPayloadDto: RegisterPayloadDTO) {
     const user = await this.authService.createUser(registerPayloadDto);
     return {
       message: 'Signup successful',
-      user: { id: user.id, email: user.email, name: user.name },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      },
     };
   }
+
 }

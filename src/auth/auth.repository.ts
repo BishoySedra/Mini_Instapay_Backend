@@ -23,9 +23,11 @@ export class AuthRepository {
 
   }
 
+  // Find a user by email
   async findUserByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findFirst({
       where: { email },
     });
   }
+
 }

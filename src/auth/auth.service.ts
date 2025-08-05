@@ -13,16 +13,20 @@ export class AuthService {
     private authRepository: AuthRepository,
   ) { }
 
+  // This method is used to create a new user in the system
   async createUser(data: RegisterPayloadDTO) {
 
-    const { email, password, name, phone, address } = data;
+    // Extracting properties from the data object
+    const { name, address, phone, email, password } = data;
 
+    // Validate email format
     const isFound = await this.authRepository.findUserByEmail(email);
 
     if (isFound) {
       throw new UnauthorizedException('this email is already taken');
     }
 
+    // if all good, create the user
     return await this.authRepository.createUser({
       email,
       password,
