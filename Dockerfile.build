@@ -15,4 +15,4 @@ RUN npm run build
 EXPOSE 8000
 
 # At runtime: deploy + start
-CMD ["npm run prisma:deploy && npm run start:prod"]
+CMD ["sh", "-c", "npm run prisma:deploy && npm run start:prod"]
