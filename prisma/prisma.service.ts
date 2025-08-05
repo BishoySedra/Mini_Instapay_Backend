@@ -4,6 +4,15 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
+  constructor() {
+    super({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      }
+    });
+  }
   async onModuleInit() {
     this.$use(async (params: Prisma.MiddlewareParams, next) => {
       if (
